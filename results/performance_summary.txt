@@ -1,0 +1,24 @@
+=====================================================================================
+Performance Summary - CIFAR-10 Test Set (Best Results)
+=====================================================================================
+
+Method            # Layers        # Params    Error (%)   Accuracy (%)
+-------------------------------------------------------------------------------------
+PlainNet20              20         269,722         8.65          91.35
+PlainNet32              32         464,154         9.38          90.62
+PlainNet56              56         853,018        11.83          88.17
+ResNet20                20         272,474         7.91          92.09
+ResNet32                32         466,906         7.01          92.99
+ResNet56                56         855,770         6.54          93.46
+ResNet110              110       1,730,714         5.82          94.18
+-------------------------------------------------------------------------------------
+
+Details:
+  • PlainNet20: Best accuracy at epoch 163 (from PlainNet20_20251106-161914.json)
+  • PlainNet32: Best accuracy at epoch 152 (from PlainNet32_20251106-203115.json)
+  • PlainNet56: Best accuracy at epoch 164 (from PlainNet56_20251109-190438.json)
+  • ResNet20: Best accuracy at epoch 90 (from ResNet20_20251109-163847.json)
+  • ResNet32: Best accuracy at epoch 152 (from ResNet32_20251106-215354.json)
+  • ResNet56: Best accuracy at epoch 143 (from ResNet56_20251109-192408.json)
+  • ResNet110: Best accuracy at epoch 155 (from ResNet110_20251109-165753.json)
+
