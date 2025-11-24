@@ -1,88 +1,140 @@
 # COMP3314 Project: ResNet Reproduction
 
-## Overview
+## Paper Reference
 
-This project reproduces the CIFAR-10 experiments from "Deep Residual Learning for Image Recognition" (He et al., CVPR 2016), including the PlainNet baseline used to illustrate the degradation phenomenon.
+- **Title**: *Deep Residual Learning for Image Recognition*
+- **Authors**: Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun
+- **Venue**: IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016
+- **Link**: https://arxiv.org/abs/1512.03385
 
-## Project Structure
+Our goal is to reproduce the CIFAR-10 experiments from Section 4.2 of the paper, comparing plain convolutional networks (PlainNet) against residual counterparts (ResNet) at depths 20, 32, 56, and 110 layers.
+
+## Repository Layout
 
 ```
 resnet-reproduction/
-├── models/                   # Model architectures
-│   ├── resnet_cifar.py      # ResNet and PlainNet for CIFAR-10
-│   └── resnet_imagenet.py   # (Optional) ResNet for ImageNet
-├── datasets/                # Data loading utilities
-│   └── cifar10_loader.py    # CIFAR-10 dataset and augmentation
-├── utils/                   # Training and utility functions
-│   ├── train_eval.py        # Training loop and evaluation
-│   ├── scheduler.py         # Learning rate scheduling
-│   └── plot_curves.py       # Visualization utilities
-├── experiments/             # Experiment notebooks and scripts
-│   ├── plain_vs_resnet.ipynb         # Training curve comparison
-│   └── layer_response_analysis.py    # Layer response analysis
-├── results/                 # Output directory
-│   ├── checkpoints/         # Trained model weights
-│   └── logs/                # Training logs
-└── main.py                  # Main training script
+├── models/                   # CIFAR-10 PlainNet/ResNet implementations
+├── datasets/                 # CIFAR-10 data pipeline
+├── utils/                    # Training, scheduler, plotting helpers
+├── examples/                 # Scripts for plotting/analysis
+├── experiments/              # Notebooks and analysis scripts
+├── results/                  # Logs + checkpoints + generated figures
+└── main.py                   # CLI entry point for training/evaluation
 ```
 
-## Quick Start
-
-### 1. Install dependencies
+## Environment Setup
 
 ```bash
-py -3 -m pip install -r requirements.txt   # Windows
-# or
-pip install -r requirements.txt            # Other environments
+python -m venv .venv
+source .venv/bin/activate      # .venv\Scripts\activate on Windows
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-### 2. Sanity check the models
+The project assumes PyTorch ≥ 1.9 with CUDA support if you plan to train on GPU.
+
+## Running the Code
+
+### 1. Quick sanity check
 
 ```bash
-py -3 smoke_test.py
+python - <<'PY'
+import torch
+from models.resnet_cifar import ResNet20, ResNet32, PlainNet20
+
+x = torch.randn(2, 3, 32, 32)
+for name, cls in [("PlainNet20", PlainNet20), ("ResNet20", ResNet20), ("ResNet32", ResNet32)]:
+    y = cls()(x)
+    print(name, "->", tuple(y.shape))
+PY
 ```
 
-The helper script runs a forward pass on `ResNet20`, `ResNet32`, and `PlainNet20` to verify that everything is wired up correctly. (Create it with the snippet shown in `utils/train_eval.py` docstring or adapt to your preference.)
+You should see `(2, 10)` outputs for each model, confirming the classifier heads. Constructors for the deeper variants (`PlainNet56`, `PlainNet110`, `ResNet56`, `ResNet110`) follow the same pattern.
 
-### 3. Train on CIFAR-10
+### 2. Train a model
 
 ```bash
-py -3 main.py --model ResNet20 --epochs 164 --batch_size 128 --lr 0.1
+python main.py \
+  --model ResNet20 \
+  --epochs 164 \
+  --batch_size 128 \
+  --lr 0.1 \
+  --device cuda \
+  --amp
 ```
 
-Useful flags:
+Key arguments:
 
-- `--model`: `ResNet20`, `ResNet32`, `PlainNet20`, `PlainNet32`
-- `--device`: `cuda` (default, falls back to CPU if unavailable) or `cpu`
-- `--amp`: enable automatic mixed precision when using CUDA
-- `--warmup_epochs`: fractional epochs of linear warmup (e.g. `--warmup_epochs 5`)
+- `--model`: `PlainNet20`, `PlainNet32`, `PlainNet56`, `PlainNet110`, `ResNet20`, `ResNet32`, `ResNet56`, or `ResNet110`
+- `--device`: `cuda`, `cuda:0`, or `cpu` (default tries CUDA and falls back to CPU)
+- `--amp`: enables mixed precision on CUDA for faster training
+- `--warmup-epochs`: linear warmup duration (e.g. `--warmup-epochs 5`)
+- `--milestones`: override LR decay iterations (default `32000,48000`)
+- `--checkpoint-freq`: checkpoint interval in epochs
 
-If a CIFAR-10 download is interrupted or corrupted, delete `./data/cifar-10-python.tar.gz` and rerun the command; it will redownload automatically.
+The script downloads CIFAR-10 to `./data/` on first run. Checkpoints are saved under `results/checkpoints/`, while CSV/JSON logs and diagnostic plots live in `results/logs/`.
 
-### 4. Inspect logs and checkpoints
-
-Training metrics are stored in `results/logs/`, and model checkpoints in `results/checkpoints/`.
-
-### 5. (Optional) Run analysis notebooks
+### 3. Resume or evaluate
 
 ```bash
-jupyter notebook experiments/plain_vs_resnet.ipynb
+# Resume
+python main.py --model ResNet20 --resume results/resnet20/checkpoints/ResNet20_20251109-163847_epoch90.pth
+
+# Evaluation only
+python main.py --model ResNet20 --eval-only --resume results/resnet20/checkpoints/ResNet20_20251109-163847_epoch90.pth
 ```
 
-## Paper Alignment
+### 4. Visualise training
 
-- **Section 3.1-3.3**: Residual block structure
-- **Section 4.2**: CIFAR-10 experiment setup
-- **Table 6**: Network depth configurations (20, 32, 56, 110)
-- **Figure 6**: Training/test error curves
-- **Figure 7**: Layer response analysis
+After training you will find:
 
-## Status / TODO
+- Run-specific JSON logs under `results/<model>/logs/`
+- Checkpoints under `results/<model>/checkpoints/`
+- Aggregated CSV + quick-look plots under `results/logs/`
+- Publication-style figures (Figure 6 comparisons, accuracy/error dashboards) under `results/plots/`
 
-- [x] Implement BasicBlock and ResNet/PlainNet CIFAR architectures
-- [x] Implement CIFAR-10 data loading with augmentation
-- [x] Implement training loop, evaluation utilities, and checkpointing
-- [x] Implement learning rate scheduler with warmup support
-- [ ] Reproduce Figure 6 training/test error curves
-- [ ] Reproduce Figure 7 layer response analysis
-- [ ] Extend to deeper networks (ResNet56/110) and additional experiments
+To regenerate the figures programmatically:
+
+```bash
+python examples/plot_training_results.py
+```
+
+For bespoke analysis or Figure 7 reproduction, use the notebooks in `experiments/`.
+
+## Reproduced Results
+
+Full 164-epoch training runs were executed for both plain and residual networks at depths 20, 32, 56, and 110. Best CIFAR-10 test-set checkpoints achieved the following metrics:
+
+| Model        | Depth | Parameters | Error (%) | Accuracy (%) |
+|--------------|------:|-----------:|----------:|-------------:|
+| PlainNet20   | 20    | 2.70e5     | 8.65      | 91.35        |
+| PlainNet32   | 32    | 4.64e5     | 9.38      | 90.62        |
+| PlainNet56   | 56    | 8.53e5     | 11.83     | 88.17        |
+| PlainNet110  | 110   | 1.73e6     | 77.52     | 22.48        |
+| ResNet20     | 20    | 2.72e5     | 7.65      | 92.35        |
+| ResNet32     | 32    | 4.67e5     | 7.01      | 92.99        |
+| ResNet56     | 56    | 8.56e5     | 6.54      | 93.46        |
+| ResNet110    | 110   | 1.73e6     | 5.82      | 94.18        |
+
+See `results/performance_summary.txt` for run identifiers, epoch numbers, and references to the raw log files (\*.json) used to compute the table.
+
+Observations:
+
+- PlainNets suffer from the degradation problem: deeper models (56/110) underperform shallower ones.
+- Residual networks continue to improve with depth, matching the trend reported in Table 6 of the original paper.
+- Generated figures in `results/plots/` reproduce Figure 6 (training/test error curves) and extend them with accuracy/loss dashboards for all depths.
+
+## Current Status & Next Steps
+
+- ✅ Plain/Residual CIFAR models implemented for depths 20, 32, 56, 110 (6n+2 rule).
+- ✅ Training pipeline replicates paper hyper-parameters and learning-rate schedule (32k/48k decays, optional warmup).
+- ✅ Result tables and plots generated from actual runs (`results/performance_summary.txt`, `results/plots/`).
+
+
+## Troubleshooting
+
+- **Dataset download issues**: remove the corrupted archive under `./data/` and rerun.
+- **CUDA out of memory**: reduce `--batch-size` or disable AMP (`--no-amp` by default).
+- **Slow dataloading**: increase `--num-workers` if your system supports it.
+
+Feel free to open issues or PRs to extend the reproduction further (e.g., ResNet164/1001 or ImageNet experiments).

@@ -11,9 +11,8 @@ Models implemented here:
 
 * ``ResNet20`` / ``PlainNet20`` (n=3)
 * ``ResNet32`` / ``PlainNet32`` (n=5)
-
-Additional depths (e.g. 56, 110) can be added by extending the factory
-functions at the bottom of the file.
+* ``ResNet56`` / ``PlainNet56`` (n=9)
+* ``ResNet110`` / ``PlainNet110`` (n=18)
 """
 
 from __future__ import annotations
@@ -241,12 +240,28 @@ def ResNet32(num_classes: int = 10) -> ResNet_CIFAR:
     return resnet_cifar(32, num_classes=num_classes)
 
 
+def ResNet56(num_classes: int = 10) -> ResNet_CIFAR:
+    return resnet_cifar(56, num_classes=num_classes)
+
+
+def ResNet110(num_classes: int = 10) -> ResNet_CIFAR:
+    return resnet_cifar(110, num_classes=num_classes)
+
+
 def PlainNet20(num_classes: int = 10) -> PlainNet_CIFAR:
     return plainnet_cifar(20, num_classes=num_classes)
 
 
 def PlainNet32(num_classes: int = 10) -> PlainNet_CIFAR:
     return plainnet_cifar(32, num_classes=num_classes)
+
+
+def PlainNet56(num_classes: int = 10) -> PlainNet_CIFAR:
+    return plainnet_cifar(56, num_classes=num_classes)
+
+
+def PlainNet110(num_classes: int = 10) -> PlainNet_CIFAR:
+    return plainnet_cifar(110, num_classes=num_classes)
 
 
 __all__ = [
@@ -256,8 +271,12 @@ __all__ = [
     "PlainNet_CIFAR",
     "ResNet20",
     "ResNet32",
+    "ResNet56",
+    "ResNet110",
     "PlainNet20",
     "PlainNet32",
+    "PlainNet56",
+    "PlainNet110",
     "resnet_cifar",
     "plainnet_cifar",
 ]

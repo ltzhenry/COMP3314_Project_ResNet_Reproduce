@@ -7,8 +7,12 @@ Contains implementations of ResNet architectures for CIFAR-10 and ImageNet datas
 from .resnet_cifar import (
     ResNet20,
     ResNet32,
+    ResNet56,
+    ResNet110,
     PlainNet20,
     PlainNet32,
+    PlainNet56,
+    PlainNet110,
     ResNet_CIFAR,
     PlainNet_CIFAR,
 )
@@ -25,8 +29,12 @@ __all__ = [
     # CIFAR models
     "ResNet20",
     "ResNet32",
+    "ResNet56",
+    "ResNet110",
     "PlainNet20",
     "PlainNet32",
+    "PlainNet56",
+    "PlainNet110",
     "ResNet_CIFAR",
     "PlainNet_CIFAR",
     # ImageNet models

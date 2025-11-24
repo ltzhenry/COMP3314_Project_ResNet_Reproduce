@@ -20,10 +20,14 @@ from utils.train_eval import EpochMetrics, evaluate, save_checkpoint, train_one_
 
 
 MODEL_REGISTRY = {
-    "ResNet20": resnet_cifar.ResNet20,
-    "ResNet32": resnet_cifar.ResNet32,
     "PlainNet20": resnet_cifar.PlainNet20,
     "PlainNet32": resnet_cifar.PlainNet32,
+    "PlainNet56": resnet_cifar.PlainNet56,
+    "PlainNet110": resnet_cifar.PlainNet110,
+    "ResNet20": resnet_cifar.ResNet20,
+    "ResNet32": resnet_cifar.ResNet32,
+    "ResNet56": resnet_cifar.ResNet56,
+    "ResNet110": resnet_cifar.ResNet110,
 }
 
 
